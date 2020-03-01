@@ -66,17 +66,19 @@ static esp_err_t imCapture2SD() {
   size_t fb_len = 0;
   uint8_t *fb_buf;
   int64_t fr_start = esp_timer_get_time();
-  Serial.println("\nCamera Cap Started");
+  //Serial.println("\nCamera Cap Started");
   fb = arducam_camera_fb_get(); // obtain pointer to frame buffer
+  int64_t fr_end = esp_timer_get_time();
   if (!fb) {
-    Serial.println("Camera Cap FAILED");
+    //Serial.println("Camera Cap FAILED");
     return ESP_FAIL;
   }
   else {
-    Serial.println("Camera Cap DONE");
+    //Serial.println("Camera Cap DONE");
   }
   fb_len = fb->len;
   fb_buf = fb->buf;
+  Serial.printf("%d.jpg: %u Bytes %ums to capture\r\n", i, (uint32_t)(fb_len), (uint32_t)((fr_end - fr_start) / 1000));
   sprintf(path, "/ArduCAM/%d.jpg", ++i);
   File f = SD_MMC.open(path, "w");
   if (!f) {
@@ -87,7 +89,5 @@ static esp_err_t imCapture2SD() {
   strcat(path, " written");
   Serial.printf("%s\r\n", path);
   arducam_camera_fb_return(fb);
-  int64_t fr_end = esp_timer_get_time();
-  Serial.printf("%d.jpg: %u Bytes %ums to write\r\n", i, (uint32_t)(fb_len), (uint32_t)((fr_end - fr_start) / 1000));
   return res;
 }
