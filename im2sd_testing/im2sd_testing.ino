@@ -11,7 +11,7 @@
 #include "arducam_esp32s_camera.h"
 #include <WiFi.h>
 #include "SD_MMC.h"
-#include "FS.h"
+//#include "FS.h"
 
 int i = 0;
 char path[30]; // array for file path
@@ -23,7 +23,7 @@ void setup() {
   sdInit();
   for (int j=0; j<5; ++j) {
     imCapture2SD();
-    delay(5000);
+    delay(500);
   }
 }
 
