@@ -2,10 +2,10 @@
  * Developer: Jake Wahl
  * Date: March 7, 2020
  * Purpose:
- * A image sensor node within an IoT network. Every N hours, this node will wake from deep
+ * AN image sensor node within an IoT network. Every N hours, this node will wake from deep
  * sleep, capture an image, format data packets, Tx over BLE, and return to deep sleep.
  * 
- * This code is for a California Polytechnic State University Master's Thesis work.
+ * This code is for a California Polytechnic State University Master's Thesis.
  * All code is the developer's. 
  * NOTE: SERVER-SIDE CODE ONLY
 */
@@ -49,6 +49,7 @@ class MyServerCallbacks: public BLEServerCallbacks {
       deviceConnected = true;
     };
     void onDisconnect(BLEServer* pServer) {
+      Serial.println("onDisconnect Entered");
       deviceConnected = false;
     }
 };
@@ -60,7 +61,7 @@ void setup() {
   Serial.begin(115200);
 
   // Create the BLE Device
-  BLEDevice::init("ESP_JDW"); // name it anything
+  BLEDevice::init("ESP32"); // 5 chars or less
 
   // Create the BLE Server
   pServer = BLEDevice::createServer();
@@ -100,12 +101,13 @@ void loop() {
     if (deviceConnected && ONCE) {
         // open a specific file on the SD card
         SD_MMC.begin();
-        File f = SD_MMC.open("/ArduCAM/3.jpg", "r");
+        File f = SD_MMC.open("/ArduCAM/2.jpg", "r");
         if (!f) {
           return;
         }
         delay(500); // give client time to run rest of setup after connected NEEDS THIS
         // run while the file index is not at EOF
+        Serial.println("Image Tx Start");
         while (f.available()) { 
           feedTheDog(); // WDT issue fix
           // read 4 bytes to Tx 4 bytes, format buffer with data
@@ -119,10 +121,10 @@ void loop() {
           } 
           // 99% of data will come here
           if (i == 4) { 
-            Serial.println(buf[0], HEX);
-            Serial.println(buf[1], HEX);
-            Serial.println(buf[2], HEX);
-            Serial.println(buf[3], HEX);
+            //Serial.println(buf[0], HEX);
+            //Serial.println(buf[1], HEX);
+            //Serial.println(buf[2], HEX);
+            //Serial.println(buf[3], HEX);
             pCharacteristic->setValue(buf, 4); // BLE Tx 4 bytes of image data
             pCharacteristic->notify(); // send a notification so client can trigger callback
             i = 0; // reset buffer index
@@ -133,6 +135,7 @@ void loop() {
             Serial.println(buf[0], HEX);
             Serial.println(buf[1], HEX);
             Serial.println(buf[2], HEX);
+            Serial.print(i);
             // single byte values need to be cast this way 
             pCharacteristic->setValue((uint8_t*)&buf[0], 1);
             pCharacteristic->notify();
@@ -142,26 +145,34 @@ void loop() {
             delay(1);
             pCharacteristic->setValue((uint8_t*)&buf[2], 1);
             pCharacteristic->notify();
+            delay(1);
           } else if (i == 2) {
             Serial.println(buf[0], HEX);
             Serial.println(buf[1], HEX);
+            Serial.print(i);
             pCharacteristic->setValue((uint8_t*)&buf[0], 1);
             pCharacteristic->notify();
             delay(1);
             pCharacteristic->setValue((uint8_t*)&buf[1], 1);
             pCharacteristic->notify();
+            delay(1);
           } else if (i == 1) {
             Serial.println(buf[0], HEX);
+            Serial.print(i);
             pCharacteristic->setValue((uint8_t*)&buf[0], 1);
             pCharacteristic->notify();
+            delay(1);
           }
 
           
         }
         // Read the entire file
+        //Serial.println(i);
+        Serial.println("Image Tx Finish");
         delay(20); // give time for BLE stack to finish
         f.close(); // close the file
         SD_MMC.end(); // de-init SD card
+        BLEDevice::deinit();
         ONCE = false;
     }
     // disconnecting

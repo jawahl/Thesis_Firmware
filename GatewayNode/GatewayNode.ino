@@ -1,10 +1,15 @@
-/**
+/*
  * Developer: Jake Wahl
- * Date:      February 19, 2020
- * Purpose:   Client connects to server with specific UUID then receives data only when notified.
+ * Date: March 7, 2020
+ * Purpose:
+ * A gateway node within an IoT network. This node is continually on and will have BLE
+ * and WiFi connection. It will connect to the BLE Sensor node and Rx image data and store it.
+ * The node will then Tx the images stored to a local or cloud server for use in CV & ML. 
  * 
- * NOTE:      CLIENT-SIDE CODE ONLY
- */
+ * This code is for a California Polytechnic State University Master's Thesis.
+ * All code is the developer's. 
+ * NOTE: CLIENT-SIDE CODE ONLY
+*/
  
 // == INCLUDE STATEMENTS ==
 // ---------------------------------------------------------------------------------------
@@ -44,9 +49,11 @@ static void notifyCallback(
 
 class MyClientCallback : public BLEClientCallbacks {
   void onConnect(BLEClient* pclient) {
+    // do nothing, action is taken elsewhere
   }
 
   void onDisconnect(BLEClient* pclient) {
+    Serial.println("onDisconnect Entered");
     connected = false;
   }
 };
@@ -78,7 +85,8 @@ class MyAdvertisedDeviceCallbacks: public BLEAdvertisedDeviceCallbacks {
 // ---------------------------------------------------------------------------------------
 void setup() {
   Serial.begin(115200);
-  Serial.println("Starting Arduino BLE Client application...");
+  // SD init stuff goes here
+  
   BLEDevice::init("");
 
   // Retrieve a Scanner and set the callback we want to use to be informed when we
