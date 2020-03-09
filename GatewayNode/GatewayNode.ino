@@ -33,6 +33,7 @@ static boolean doScan = false;
 static BLERemoteCharacteristic* pRemoteCharacteristic;
 static BLEAdvertisedDevice* myDevice;
 char path[30]; // hold file path
+File f;
 
 // == DEFINE STATEMENTS ==
 // ---------------------------------------------------------------------------------------
@@ -50,6 +51,7 @@ static void notifyCallback(
     Data = *pData; // holds chunk of image data!!!
     feedTheDog(); // Fixes Hardware TWD Trigger
     Serial.println(Data, HEX); // this is only capable of printing 1 byte at a time, Data = 4 bytes
+  //f.write(Data, length); // write 4 byte data to file
 }
 
 class MyClientCallback : public BLEClientCallbacks {
@@ -62,7 +64,8 @@ class MyClientCallback : public BLEClientCallbacks {
     Serial.println("onDisconnect Entered");
     Serial.printf("Entering Deep Sleep for %d seconds\n", TIME_TO_SLEEP);
     connected = false;
-    esp_deep_sleep_start();
+  //f.close(); // close the file we wrote to
+    esp_deep_sleep_start(); // enter deep sleep for a reboot
   }
 };
 
@@ -95,6 +98,8 @@ void setup() {
   Serial.begin(115200);
   esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
   // SD init stuff goes here
+//SD_MMC.begin();
+//f = SD_MMC.open("/ArduCAM/A.jpg", "w");
   
   BLEDevice::init("");
 
