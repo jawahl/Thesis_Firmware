@@ -39,18 +39,24 @@ char path[30]; // array for file path
 
 // == DEFINE STATEMENTS ==
 // ---------------------------------------------------------------------------------------
+#define uS_TO_S_FACTOR 1000000 // conversion factor us to seconds
+#define TIME_TO_SLEEP  5       // time ESP will sleep (in seconds)
 #define SERVICE_UUID        "4fafc201-1fb5-459e-8fcc-c5c9c331914b"
 #define CHARACTERISTIC_UUID "beb5483e-36e1-4688-b7f5-ea07361b26a8"
 
+
 // == CALLBACK FUNCTION ==
-// triggers on client connection
 class MyServerCallbacks: public BLEServerCallbacks {
+    // triggers on client connection
     void onConnect(BLEServer* pServer) {
       deviceConnected = true;
     };
+    // triggers on disconnection
     void onDisconnect(BLEServer* pServer) {
       Serial.println("onDisconnect Entered");
+      Serial.printf("Entering Deep Sleep for %d seconds\n", TIME_TO_SLEEP);
       deviceConnected = false;
+      esp_deep_sleep_start();
     }
 };
 
@@ -59,6 +65,8 @@ class MyServerCallbacks: public BLEServerCallbacks {
 // ---------------------------------------------------------------------------------------
 void setup() {
   Serial.begin(115200);
+  // Enable a wakeup source for sleep
+  esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
 
   // Create the BLE Device
   BLEDevice::init("ESP32"); // 5 chars or less
@@ -91,6 +99,7 @@ void setup() {
   pAdvertising->setScanResponse(false);
   pAdvertising->setMinPreferred(0x0);  // set value to 0x00 to not advertise this parameter
   BLEDevice::startAdvertising();
+  Serial.println("Start Advertising");
 }
 
 
@@ -173,13 +182,13 @@ void loop() {
         f.close(); // close the file
         SD_MMC.end(); // de-init SD card
         BLEDevice::deinit();
-        ONCE = false;
+        ONCE = false; // won't need this
     }
     // disconnecting
     if (!deviceConnected && oldDeviceConnected) {
         delay(500); // give the bluetooth stack the chance to get things ready
         pServer->startAdvertising(); // restart advertising
-        Serial.println("start advertising");
+        //Serial.println("start advertising");
         oldDeviceConnected = deviceConnected;
     }
     // connecting

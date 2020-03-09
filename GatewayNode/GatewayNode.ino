@@ -34,6 +34,11 @@ static BLERemoteCharacteristic* pRemoteCharacteristic;
 static BLEAdvertisedDevice* myDevice;
 char path[30]; // hold file path
 
+// == DEFINE STATEMENTS ==
+// ---------------------------------------------------------------------------------------
+#define uS_TO_S_FACTOR 1000000 // conversion factor us to seconds
+#define TIME_TO_SLEEP  5       // time ESP will sleep (in seconds)
+
 
 // == NOTIFICATION CALLBACK FUNCTION ==
 // Runs when notified from server
@@ -50,11 +55,14 @@ static void notifyCallback(
 class MyClientCallback : public BLEClientCallbacks {
   void onConnect(BLEClient* pclient) {
     // do nothing, action is taken elsewhere
+    Serial.println("Hi I'm Connected");
   }
 
   void onDisconnect(BLEClient* pclient) {
     Serial.println("onDisconnect Entered");
+    Serial.printf("Entering Deep Sleep for %d seconds\n", TIME_TO_SLEEP);
     connected = false;
+    esp_deep_sleep_start();
   }
 };
 
@@ -73,7 +81,7 @@ class MyAdvertisedDeviceCallbacks: public BLEAdvertisedDeviceCallbacks {
 
       BLEDevice::getScan()->stop();
       myDevice = new BLEAdvertisedDevice(advertisedDevice);
-      doConnect = true;
+      //doConnect = true;
       doScan = true;
 
     } // Found our server
@@ -85,6 +93,7 @@ class MyAdvertisedDeviceCallbacks: public BLEAdvertisedDeviceCallbacks {
 // ---------------------------------------------------------------------------------------
 void setup() {
   Serial.begin(115200);
+  esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
   // SD init stuff goes here
   
   BLEDevice::init("");
@@ -104,12 +113,10 @@ void setup() {
 // == LOOP CODE ==
 // ---------------------------------------------------------------------------------------
 void loop() {
-  if (doConnect == true) {
     if (connectToServer()) {
       while(connected) {
         // empty bc we only care about reading data when we are notified
         // that's what the callback function is for!
-      }
-    }
-  }
+      } 
+   }
 }
