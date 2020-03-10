@@ -40,7 +40,7 @@ char path[30]; // array for file path
 // == DEFINE STATEMENTS ==
 // ---------------------------------------------------------------------------------------
 #define uS_TO_S_FACTOR 1000000 // conversion factor us to seconds
-#define TIME_TO_SLEEP  5       // time ESP will sleep (in seconds)
+#define TIME_TO_SLEEP  10      // time ESP will sleep (in seconds)
 #define SERVICE_UUID        "4fafc201-1fb5-459e-8fcc-c5c9c331914b"
 #define CHARACTERISTIC_UUID "beb5483e-36e1-4688-b7f5-ea07361b26a8"
 
@@ -67,6 +67,12 @@ void setup() {
   Serial.begin(115200);
   // Enable a wakeup source for sleep
   esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
+
+
+ // Capture 5 Images, store in SD Card
+ for (int n=0; n<5; ++n) {
+    imCapture2SD();
+ }
 
   // Create the BLE Device
   BLEDevice::init("ESP32"); // 5 chars or less
@@ -110,7 +116,7 @@ void loop() {
     if (deviceConnected && ONCE) {
         // open a specific file on the SD card
         SD_MMC.begin();
-        File f = SD_MMC.open("/ArduCAM/2.jpg", "r");
+        File f = SD_MMC.open("/ArduCAM/5.jpg", "r");
         if (!f) {
           return;
         }
