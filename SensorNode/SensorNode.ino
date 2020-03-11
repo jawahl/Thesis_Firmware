@@ -33,6 +33,7 @@ uint8_t value; // data to be transmitted via BLE
 const uint8_t chunkSize = 4; // # of bytes in buffer
 uint8_t buf[chunkSize]; // image data buffer
 int i; // buffer index
+int im_i = 0; //image number
 bool ONCE = true; // boolean flag to only read file once
 char path[30]; // array for file path
 
@@ -40,7 +41,7 @@ char path[30]; // array for file path
 // == DEFINE STATEMENTS ==
 // ---------------------------------------------------------------------------------------
 #define uS_TO_S_FACTOR 1000000 // conversion factor us to seconds
-#define TIME_TO_SLEEP  10      // time ESP will sleep (in seconds)
+#define TIME_TO_SLEEP  3      // time ESP will sleep (in seconds)
 #define SERVICE_UUID        "4fafc201-1fb5-459e-8fcc-c5c9c331914b"
 #define CHARACTERISTIC_UUID "beb5483e-36e1-4688-b7f5-ea07361b26a8"
 
@@ -70,9 +71,13 @@ void setup() {
 
 
  // Capture 5 Images, store in SD Card
- for (int n=0; n<5; ++n) {
-    imCapture2SD();
- }
+   cameraInit();
+   SD_MMC.begin();
+   for (int n=0; n<5; ++n) {
+      imCapture2SD();
+      Serial.printf("Picture %d taken\n", n+1);
+   }
+   SD_MMC.end();
 
   // Create the BLE Device
   BLEDevice::init("ESP32"); // 5 chars or less
@@ -116,19 +121,20 @@ void loop() {
     if (deviceConnected && ONCE) {
         // open a specific file on the SD card
         SD_MMC.begin();
-        File f = SD_MMC.open("/ArduCAM/5.jpg", "r");
-        if (!f) {
+        File file = SD_MMC.open("/ArduCAM/5.jpg", "r");
+        if (!file) {
+          Serial.println("file not opened");
           return;
         }
         delay(500); // give client time to run rest of setup after connected NEEDS THIS
         // run while the file index is not at EOF
         Serial.println("Image Tx Start");
-        while (f.available()) { 
+        while (file.available()) { 
           feedTheDog(); // WDT issue fix
           // read 4 bytes to Tx 4 bytes, format buffer with data
           while (i < 4) {
-            if (f.available()) { // make sure file is still readable
-              buf[i] = f.read(); // read one byte from file
+            if (file.available()) { // make sure file is still readable
+              buf[i] = file.read(); // read one byte from file
               ++i; // increment index
             } else {
                break; // this means we got to EOF in the middle of i<4
@@ -185,7 +191,7 @@ void loop() {
         //Serial.println(i);
         Serial.println("Image Tx Finish");
         delay(20); // give time for BLE stack to finish
-        f.close(); // close the file
+        file.close(); // close the file
         SD_MMC.end(); // de-init SD card
         BLEDevice::deinit();
         ONCE = false; // won't need this

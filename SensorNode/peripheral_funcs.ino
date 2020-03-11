@@ -46,7 +46,7 @@ static esp_err_t imCapture2SD() {
   }
   fb_len = fb->len;
   fb_buf = fb->buf;
-  sprintf(path, "/ArduCAM/%d.jpg", ++i);
+  sprintf(path, "/ArduCAM/%d.jpg", ++im_i);
   File f = SD_MMC.open(path, "w");
   if (!f) {
     return ESP_FAIL;
