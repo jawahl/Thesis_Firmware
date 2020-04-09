@@ -132,7 +132,7 @@ void loop() {
         while (file.available()) { 
           feedTheDog(); // WDT issue fix
           // read 4 bytes to Tx 4 bytes, format buffer with data
-          while (i < 4) {
+          while (i < chunkSize) {
             if (file.available()) { // make sure file is still readable
               buf[i] = file.read(); // read one byte from file
               ++i; // increment index
@@ -141,12 +141,12 @@ void loop() {
             }
           } 
           // 99% of data will come here
-          if (i == 4) { 
+          if (i == chunkSize) { 
             //Serial.println(buf[0], HEX);
             //Serial.println(buf[1], HEX);
             //Serial.println(buf[2], HEX);
             //Serial.println(buf[3], HEX);
-            pCharacteristic->setValue(buf, 4); // BLE Tx 4 bytes of image data
+            pCharacteristic->setValue(buf, sizeof(buf)); // BLE Tx 4 bytes of image data
             pCharacteristic->notify(); // send a notification so client can trigger callback
             i = 0; // reset buffer index
           } 
