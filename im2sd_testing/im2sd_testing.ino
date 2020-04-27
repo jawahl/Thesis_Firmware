@@ -9,24 +9,28 @@
 // INCLUDES
 // ================================
 #include "arducam_esp32s_camera.h"
-#include <WiFi.h>
-#include "SD_MMC.h"
-//#include "FS.h"
+//#include "SD_MMC.h"
 
 int i = 0;
 char path[30]; // array for file path
+#define TIME_TO_SLEEP 1
+#define uS_TO_S_FACTOR 1000000
 
 void setup() {
   Serial.begin(115200);
-  Serial.println("ArduCAM Start");
+  //Serial.println("ArduCAM Start");
+  esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
   cameraInit();
-  sdInit();
-  for (int j=0; j<5; ++j) {
-    imCapture2SD();
-    delay(500);
-  }
+  imCapture2SD();
+  imCapture2SD();
+  imCapture2SD();
+  imCapture2SD();
+  imCapture2SD();
+  Serial.println("Sleep start");
+  esp_deep_sleep_start();
 }
 
 void loop() {
+  //will never get here
 
 }

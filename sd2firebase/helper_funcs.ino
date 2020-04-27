@@ -3,7 +3,7 @@
 void cameraInit() {
   esp_err_t err = arducam_camera_init(PIXFORMAT_JPEG);
   if (err != ESP_OK) {
-    return;
+    ESP.restart();
   }
   else
     delay(1); // fixes error (s isn't recognized idk why)
@@ -54,7 +54,17 @@ static esp_err_t imCapture2SD() {
   f.write(fb_buf, fb_len);
   int64_t fr_end = esp_timer_get_time();
   f.close();
-  Serial.printf("%d.jpg: %u Bytes %ums to capture and write\r\n", im_i, (uint32_t)(fb_len), (uint32_t)((fr_end - fr_start) / 1000));
+  Serial.printf("image_%d.jpg: %u Bytes, %ums to capture and write\r\n", im_i, (uint32_t)(fb_len), (uint32_t)((fr_end - fr_start) / 1000));
   arducam_camera_fb_return(fb);
   return res;
+}
+
+void takeNPictures(int num_pics) {
+  cameraInit();
+  SD_MMC.begin();
+  for (int n=0; n<num_pics; ++n) {
+    imCapture2SD();
+    Serial.printf("Picture %d Captured\n", n+1);
+  }
+  SD_MMC.end();
 }

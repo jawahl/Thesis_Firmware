@@ -26,7 +26,7 @@
 static BLEUUID serviceUUID("4fafc201-1fb5-459e-8fcc-c5c9c331914b");
 // The characteristic of the remote service we are interested in.
 static BLEUUID    charUUID("beb5483e-36e1-4688-b7f5-ea07361b26a8");
-uint32_t Data; // characteristic image data (4 byte chunks)
+uint8_t Data; // characteristic image data (4 byte chunks)
 static boolean doConnect = false; // found device, should we connect?
 static boolean connected = false; // connected to wanted device!
 static boolean doScan = false;
@@ -52,21 +52,23 @@ static void notifyCallback(
     feedTheDog(); // Fixes Hardware TWD Trigger
     //Serial.println(Data, HEX); // this is only capable of printing 1 byte at a time, Data = 4 bytes
     //Serial.println(sizeof(Data));
+    //Serial.println(length);
     f.write(pData, length); // write 4 byte data to file
 }
 
 class MyClientCallback : public BLEClientCallbacks {
   void onConnect(BLEClient* pclient) {
     // do nothing, action is taken elsewhere
-    Serial.println("Hi I'm Connected");
+    Serial.println("Connected");
   }
 
   void onDisconnect(BLEClient* pclient) {
-    Serial.println("onDisconnect Entered");
+    Serial.println("Disconnected");
     Serial.printf("Entering Deep Sleep for %d seconds\n", TIME_TO_SLEEP);
     connected = false;
     f.close(); // close the file we wrote to
     Serial.println("File closed");
+    SD_MMC.end();
     esp_deep_sleep_start(); // enter deep sleep for a reboot
   }
 };
@@ -101,7 +103,7 @@ void setup() {
   esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
   // SD init stuff goes here
   SD_MMC.begin();
-  f = SD_MMC.open("/ArduCAM/A.jpg", "w");
+  f = SD_MMC.open("/ArduCAM/TEST.jpg", "w");
   
   BLEDevice::init("");
 

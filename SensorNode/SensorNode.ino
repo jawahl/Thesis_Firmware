@@ -126,29 +126,29 @@ void loop() {
           Serial.println("file not opened");
           return;
         }
-        delay(500); // give client time to run rest of setup after connected NEEDS THIS
+        delay(500);                                       // give client time to run rest of setup after connected
         // run while the file index is not at EOF
         Serial.println("Image Tx Start");
         while (file.available()) { 
-          feedTheDog(); // WDT issue fix
+          //feedTheDog();                                   // WDT issue fix
           // read 4 bytes to Tx 4 bytes, format buffer with data
           while (i < chunkSize) {
-            if (file.available()) { // make sure file is still readable
-              buf[i] = file.read(); // read one byte from file
-              ++i; // increment index
+            if (file.available()) {                       // make sure file is still readable
+              buf[i] = file.read();                       // read one byte from file
+              ++i;                                        // increment index
             } else {
-               break; // this means we got to EOF in the middle of i<4
+               break;                                     // this means we got to EOF in the middle of i<4
             }
           } 
           // 99% of data will come here
           if (i == chunkSize) { 
-            //Serial.println(buf[0], HEX);
-            //Serial.println(buf[1], HEX);
-            //Serial.println(buf[2], HEX);
-            //Serial.println(buf[3], HEX);
+            Serial.println(buf[0], HEX);
+            Serial.println(buf[1], HEX);
+            Serial.println(buf[2], HEX);
+            Serial.println(buf[3], HEX);
             pCharacteristic->setValue(buf, sizeof(buf)); // BLE Tx 4 bytes of image data
-            pCharacteristic->notify(); // send a notification so client can trigger callback
-            i = 0; // reset buffer index
+            pCharacteristic->notify();                   // send a notification so client can trigger callback
+            i = 0;                                       // reset buffer index
           } 
           
           // these statements are for almost EOF
