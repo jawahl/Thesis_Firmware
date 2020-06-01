@@ -4,9 +4,9 @@
  * Purpose:
  * AN image sensor node within an IoT network. Every N hours, this node will wake from deep
  * sleep, capture images, format data packets, Tx over BLE, and return to deep sleep.
- * 
+ *
  * This code is for a California Polytechnic State University Master's Thesis.
- * All code is the developer's. 
+ * All code is the developer's.
  * NOTE: SERVER-SIDE CODE ONLY
 */
 
@@ -35,18 +35,18 @@ uint8_t value;                              // data to be transmitted via BLE
 const uint8_t chunkSize = 23;                // # of bytes in buffer
 uint8_t remSize = 1;                        // remaining data buffer size
 uint8_t buf[chunkSize];                     // image data buffer
-int i = 0;                                  // buffer index
+int i = 0;                                  // char value buffer index
 int j = 0;
 int im_i = 0;                               //image number
-bool Tx_DONE = false;               
+bool Tx_DONE = false;
 // boolean flag to only read file once
-char path[30];                              // array for file path
+char path[30];                              // array for file path string
 
 
 // == DEFINE STATEMENTS ==
 // ---------------------------------------------------------------------------------------
 #define uS_TO_S_FACTOR 1000000 // conversion factor us to seconds
-#define TIME_TO_SLEEP  30      // time ESP will sleep (in seconds)
+#define TIME_TO_SLEEP  30      // time ESP will deep sleep (in seconds)
 #define SERVICE_UUID        "4fafc201-1fb5-459e-8fcc-c5c9c331914b"
 #define CHARACTERISTIC_UUID "beb5483e-36e1-4688-b7f5-ea07361b26a8"
 
@@ -63,19 +63,18 @@ class MyServerCallbacks: public BLEServerCallbacks {
       //Serial.println("Disconnected! Callback Function Entered");
       //Serial.printf("Entering Deep Sleep for %d seconds\n", TIME_TO_SLEEP);
       deviceConnected = false;
-      //esp_wifi_stop();
       esp_deep_sleep_start();
     }
 };
 
 
-// == SETUP CODE == 
+// == SETUP CODE ==
 // ---------------------------------------------------------------------------------------
 void setup() {
   Serial.begin(115200);
   esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
 
- // CAPTURE 5 IMAGES, STORE
+ // CAPTURE 5 IMAGES, store only the 5th image
   takeNPictures(5);
   //arducam_camera_deinit();
 
@@ -114,7 +113,7 @@ void setup() {
 }
 
 
-// == LOOP CODE == 
+// == LOOP CODE ==
 // ---------------------------------------------------------------------------------------
 void loop() {
     // transmit image data
@@ -131,9 +130,9 @@ void loop() {
         delay(500);                                       // give client time to run rest of setup after connected
         // Tx START HERE
         Serial.println("Image Tx Start");
-        while (file.available()) { 
+        while (file.available()) {
           feedTheDog();                                   // WDT issue fix
-          
+
           // SWITCH CASES
           switch (remSize) {
             // CASE 1: NORMAL BUFFER SIZE
@@ -145,11 +144,11 @@ void loop() {
               }
               //delay(10);
               //Serial.println(buf[0], HEX);
-              pCharacteristic->setValue(buf, sizeof(buf)); 
-              pCharacteristic->notify(); 
+              pCharacteristic->setValue(buf, sizeof(buf));
+              pCharacteristic->notify();
               i = 0;
               break;
-              
+
             // CASE 2: NEW BUFFER VALUE
             default:
               uint8_t new_buf[remSize];
@@ -163,10 +162,10 @@ void loop() {
                 //Serial.println(buf[1], HEX);
                 //Serial.println(buf[2], HEX);
                 //Serial.println(buf[3], HEX);
-                pCharacteristic->setValue(buf, sizeof(buf)); 
-                pCharacteristic->notify();                  
-                i = 0;     
-                break;                               
+                pCharacteristic->setValue(buf, sizeof(buf));
+                pCharacteristic->notify();
+                i = 0;
+                break;
               }
 
               else if (file.available() <= remSize) {
@@ -182,7 +181,7 @@ void loop() {
               }
           }//switch
         }//file available
-        
+
         // FILE IS COMPLETELY READ
         Serial.println("Image Tx Finish");
         delay(20); // give time for BLE stack to finish
@@ -191,18 +190,4 @@ void loop() {
         BLEDevice::deinit();
         Tx_DONE = true;
     }
-
-    
-    // disconnecting
-//    if (!deviceConnected && oldDeviceConnected) {
-//        delay(500); // give the bluetooth stack the chance to get things ready
-//        pServer->startAdvertising(); // restart advertising
-//        //Serial.println("start advertising");
-//        oldDeviceConnected = deviceConnected;
-//    }
-    // connecting
-//    if (deviceConnected && !oldDeviceConnected) {
-//        // do stuff here on connecting
-//        oldDeviceConnected = deviceConnected;
-//    }
 }
