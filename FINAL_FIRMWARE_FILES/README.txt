@@ -4,4 +4,6 @@ The sensorNode_optimal folder contains Arduino files for the sensor node device.
 
 The GatewayNode_Firebase folder contains Arduino files for the gateway node device. The device is configured to continually scan for a specific BLE Server device with unique UUID's. Once found and connected, this device will receive notifications of changes in the server's Characteristic value and immediately write data chunks to Flash memory via SPIFFS. Once the connection is severed, the device attempts to connect to a local WiFi network, connects to Firebase, then pushes the image file from Flash to the Firebase database. If the upload is successful, the image is removed from Flash memory. The proper operation of this node relies on the Firebase-ESP32 Arduino library: https://github.com/mobizt/Firebase-ESP32
 
+The firebaseScrape.py will connect to Firebase and decode the base-64 encoded string and download it locally as a JPEG image. To run this script, the following Python packages must be installed: firebase, firebase_admin, base64.
+
 All other files in the Thesis_Firmware were created for testing and development purposes. Feel free to use these existing programs to test proper operation of individual functions for any respective hardware. 
