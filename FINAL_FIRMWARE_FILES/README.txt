@@ -1,4 +1,4 @@
-**This code was written for and tested on the Arducam IoTai ESP32 development board with the OV2640 2MP Camera Module. The Arduino core used with installation instructions can be found here: https://github.com/ArduCAM/ArduCAM_ESP32S_UNO_PSRAM**
+**This code was written for and tested on the Arducam IoTai ESP32 development board with the OV2640 2MP Camera Module. The Arduino core used (with installation instructions) can be found here: https://github.com/ArduCAM/ArduCAM_ESP32S_UNO_PSRAM**
 
 The sensorNode_optimal folder contains Arduino files for the sensor node device. The device is configured to capture a burst of 5 images from the OV2640 camera module, compress to JPEG, and store the fifth (best) image. The image is then written to Flash memory via SPIFFS. The device advertises itself over BLE advertising channels, finds a connection, and continually transmits 23-byte packets of image data via the Characteristic value/notifications until complete image file transfer. Upon success, the device enters deep sleep mode for a variable amount of time, set by TIME_TO_SLEEP (in seconds). 
 
